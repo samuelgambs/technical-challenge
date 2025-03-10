@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, func
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base #alteração aqui
 from sqlalchemy.orm import sessionmaker, relationship
 from django.conf import settings
 
@@ -8,7 +8,6 @@ db_config = settings.DATABASES['default']
 url = f"postgresql://{db_config['USER']}:{db_config['PASSWORD']}@{db_config['HOST']}:{db_config['PORT']}/{db_config['NAME']}"
 engine = create_engine(url)
 Session = sessionmaker(bind=engine)
-session = Session()
 
 class User(Base):
     __tablename__ = 'users'
@@ -17,7 +16,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(DateTime, default=func.now())
-    posts = relationship("Post", back_populates="author")
+    posts = relationship("Post", back_populates="author", cascade='all, delete-orphan') # Cascade adicionado
 
     def __repr__(self):
         return f"<User(username='{self.username}', email='{self.email}')>"
