@@ -1,9 +1,17 @@
-# dal.py
+# dal.py - Data Access Layer (DAL)
 from sqlalchemy.orm import Session, joinedload, sessionmaker
 from .models import User, Post, engine
+from sqlalchemy.exc import NoResultFound
+
 
 class UserDAL:
+    """
+    Data Access Layer (DAL) for User operations.
+    Provides methods for querying, creating, updating, and deleting users.
+    """
+
     def get_user_by_id(self, user_id: int, session: Session = None):
+        """Retrieve a user by ID."""
         if session:
             return session.query(User).filter(User.id == user_id).first()
         else:
@@ -15,6 +23,7 @@ class UserDAL:
                 db_session.close()
 
     def get_all_users_paginated(self, page: int, per_page: int, session: Session = None):
+        """Retrieve a paginated list of users."""
         if session:
             return session.query(User).offset((page - 1) * per_page).limit(per_page).all()
         else:
@@ -26,8 +35,9 @@ class UserDAL:
                 db_session.close()
 
     def create_user(self, user_data: dict, session: Session = None):
+        """Create a new user."""
+        user = User(**user_data)
         if session:
-            user = User(**user_data)
             session.add(user)
             session.commit()
             session.refresh(user)
@@ -36,7 +46,6 @@ class UserDAL:
             Session = sessionmaker(bind=engine)
             db_session = Session()
             try:
-                user = User(**user_data)
                 db_session.add(user)
                 db_session.commit()
                 db_session.refresh(user)
@@ -45,23 +54,22 @@ class UserDAL:
                 db_session.close()
 
     def update_user(self, user: User, user_data: dict, session: Session = None):
+        """Update an existing user."""
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
         if session:
-            for attr, value in user_data.items():
-                setattr(user, attr, value)
             session.commit()
-            return user
         else:
             Session = sessionmaker(bind=engine)
             db_session = Session()
             try:
-                for attr, value in user_data.items():
-                    setattr(user, attr, value)
                 db_session.commit()
-                return user
             finally:
                 db_session.close()
+        return user
 
     def delete_user(self, user: User, session: Session = None):
+        """Delete a user."""
         if session:
             session.delete(user)
             session.commit()
@@ -74,21 +82,29 @@ class UserDAL:
             finally:
                 db_session.close()
 
+
 class PostDAL:
-    def get_post_by_id(self, post_id, session: Session = None):
+    """
+    Data Access Layer (DAL) for Post operations.
+    Provides methods for querying, creating, updating, and deleting posts.
+    """
+
+    def get_post_by_id(self, post_id: int, session: Session = None):
+        """Retrieve a post by ID."""
         if session:
             return session.query(Post).filter(Post.id == post_id).first()
         else:
             Session = sessionmaker(bind=engine)
-            session = Session()
+            db_session = Session()
             try:
-                return session.query(Post).filter(Post.id == post_id).first()
+                return db_session.query(Post).filter(Post.id == post_id).first()
             except NoResultFound:
                 return None
             finally:
-                session.close()
+                db_session.close()
 
     def get_all_posts_paginated(self, page: int, per_page: int, session: Session = None):
+        """Retrieve a paginated list of posts, including author details."""
         if session:
             return session.query(Post).options(joinedload(Post.author)).offset((page - 1) * per_page).limit(per_page).all()
         else:
@@ -100,8 +116,9 @@ class PostDAL:
                 db_session.close()
 
     def create_post(self, post_data: dict, session: Session = None):
+        """Create a new post and link it to an existing author."""
+        author_id = post_data.get('author_id')
         if session:
-            author_id = post_data.get('author_id')
             author = session.query(User).filter(User.id == author_id).first()
             if not author:
                 return None
@@ -115,7 +132,6 @@ class PostDAL:
             Session = sessionmaker(bind=engine)
             db_session = Session()
             try:
-                author_id = post_data.get('author_id')
                 author = db_session.query(User).filter(User.id == author_id).first()
                 if not author:
                     return None
@@ -129,23 +145,22 @@ class PostDAL:
                 db_session.close()
 
     def update_post(self, post: Post, post_data: dict, session: Session = None):
+        """Update an existing post."""
+        for attr, value in post_data.items():
+            setattr(post, attr, value)
         if session:
-            for attr, value in post_data.items():
-                setattr(post, attr, value)
             session.commit()
-            return post
         else:
             Session = sessionmaker(bind=engine)
             db_session = Session()
             try:
-                for attr, value in post_data.items():
-                    setattr(post, attr, value)
                 db_session.commit()
-                return post
             finally:
                 db_session.close()
+        return post
 
     def delete_post(self, post: Post, session: Session = None):
+        """Delete a post."""
         if session:
             session.delete(post)
             session.commit()
