@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { userApi } from "@/lib/api"
-import { toast } from "sonner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import { userApi } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,56 +22,68 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
+// Interface for user data
 interface User {
-  id: number
-  username: string
-  email: string
+  id: number;
+  username: string;
+  email: string;
 }
 
+// Props interface for the UserList component
 interface UserListProps {
-  refreshTrigger: number
+  refreshTrigger: number;
 }
 
 export default function UserList({ refreshTrigger }: UserListProps) {
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [userToDelete, setUserToDelete] = useState<number | null>(null)
+  // State to store the list of users
+  const [users, setUsers] = useState<User[]>([]);
 
+  // State to track if users are being loaded
+  const [isLoading, setIsLoading] = useState(true);
+
+  // State to store any error messages
+  const [error, setError] = useState<string | null>(null);
+
+  // State to track the user ID to be deleted
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+
+  // Fetch users when the component mounts or refreshTrigger changes
   useEffect(() => {
-    fetchUsers()
-  }, [refreshTrigger])
+    fetchUsers();
+  }, [refreshTrigger]);
 
+  // Function to fetch users from the API
   const fetchUsers = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const data = await userApi.getUsers()
-      setUsers(data)
+      const data = await userApi.getUsers();
+      setUsers(data);
     } catch (err) {
-      console.error("Error fetching users:", err)
-      setError("Failed to load users. Please try again.")
-      toast.error("Failed to load users")
+      console.error("Error fetching users:", err);
+      setError("Failed to load users. Please try again.");
+      toast.error("Failed to load users");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
+  // Function to handle user deletion
   const handleDeleteUser = async (userId: number) => {
     try {
-      await userApi.deleteUser(userId)
-      setUsers(users.filter((user) => user.id !== userId))
-      toast.success("User deleted successfully")
+      await userApi.deleteUser(userId);
+      setUsers(users.filter((user) => user.id !== userId));
+      toast.success("User deleted successfully");
     } catch (err) {
-      console.error("Error deleting user:", err)
-      toast.error("Failed to delete user")
+      console.error("Error deleting user:", err);
+      toast.error("Failed to delete user");
     } finally {
-      setUserToDelete(null)
+      setUserToDelete(null);
     }
-  }
+  };
 
   return (
     <Card>
@@ -121,6 +139,5 @@ export default function UserList({ refreshTrigger }: UserListProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
-

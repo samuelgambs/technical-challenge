@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { postApi } from "@/lib/api"
-import { toast } from "sonner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Pencil, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import { postApi } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,58 +22,70 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
+// Interface for post data
 interface Post {
-  id: number
-  title: string
-  content: string
-  user_id: number
+  id: number;
+  title: string;
+  content: string;
+  user_id: number;
 }
 
+// Props interface for the PostList component
 interface PostListProps {
-  refreshTrigger: number
-  onEditPost: (post: { id: number; title: string; content: string }) => void
+  refreshTrigger: number;
+  onEditPost: (post: { id: number; title: string; content: string }) => void;
 }
 
 export default function PostList({ refreshTrigger, onEditPost }: PostListProps) {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [postToDelete, setPostToDelete] = useState<number | null>(null)
+  // State to store the list of posts
+  const [posts, setPosts] = useState<Post[]>([]);
 
+  // State to track if posts are being loaded
+  const [isLoading, setIsLoading] = useState(true);
+
+  // State to store any error messages
+  const [error, setError] = useState<string | null>(null);
+
+  // State to track the post ID to be deleted
+  const [postToDelete, setPostToDelete] = useState<number | null>(null);
+
+  // Fetch posts when the component mounts or refreshTrigger changes
   useEffect(() => {
-    fetchPosts()
-  }, [refreshTrigger])
+    fetchPosts();
+  }, [refreshTrigger]);
 
+  // Function to fetch posts from the API
   const fetchPosts = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const data = await postApi.getPosts()
-      setPosts(data)
+      const data = await postApi.getPosts();
+      setPosts(data);
     } catch (err) {
-      console.error("Error fetching posts:", err)
-      setError("Failed to load posts. Please try again.")
-      toast.error("Failed to load posts")
+      console.error("Error fetching posts:", err);
+      setError("Failed to load posts. Please try again.");
+      toast.error("Failed to load posts");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
+  // Function to handle post deletion
   const handleDeletePost = async (postId: number) => {
     try {
-      await postApi.deletePost(postId)
-      setPosts(posts.filter((post) => post.id !== postId))
-      toast.success("Post deleted successfully")
+      await postApi.deletePost(postId);
+      setPosts(posts.filter((post) => post.id !== postId));
+      toast.success("Post deleted successfully");
     } catch (err) {
-      console.error("Error deleting post:", err)
-      toast.error("Failed to delete post")
+      console.error("Error deleting post:", err);
+      toast.error("Failed to delete post");
     } finally {
-      setPostToDelete(null)
+      setPostToDelete(null);
     }
-  }
+  };
 
   return (
     <Card>
@@ -141,6 +159,5 @@ export default function PostList({ refreshTrigger, onEditPost }: PostListProps) 
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
-

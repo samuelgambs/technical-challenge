@@ -1,73 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { postApi, userApi } from "@/lib/api"
-import { toast } from "sonner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { AlertCircle, CheckCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { postApi, userApi } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Interface para usuário
+// Interface for user
 interface User {
-  id: number
-  username: string
-  email: string
+  id: number;
+  username: string;
+  email: string;
 }
 
+// Zod schema for form validation
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   content: z.string().min(10, "Content must be at least 10 characters"),
   author_id: z.string().min(1, "Please select an author"),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+// Type for form values inferred from the schema
+type FormValues = z.infer<typeof formSchema>;
 
+// Props interface for the PostCreationForm component
 interface PostCreationFormProps {
-  onPostCreated: () => void
-  onPostUpdated: () => void
+  onPostCreated: () => void;
+  onPostUpdated: () => void;
   editingPost: {
-    id: number
-    title: string
-    content: string
-  } | null
+    id: number;
+    title: string;
+    content: string;
+  } | null;
 }
 
-export default function PostCreationForm({ onPostCreated, onPostUpdated, editingPost }: PostCreationFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function PostCreationForm({
+  onPostCreated,
+  onPostUpdated,
+  editingPost,
+}: PostCreationFormProps) {
+  // State to track if the form is submitting
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State to manage form submission status (success or error)
   const [formStatus, setFormStatus] = useState<{
-    type: "success" | "error" | null
-    message: string | null
-  }>({ type: null, message: null })
+    type: "success" | "error" | null;
+    message: string | null;
+  }>({ type: null, message: null });
 
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
+  // State to store the list of users
+  const [users, setUsers] = useState<User[]>([]);
 
-  // Buscar a lista de usuários
+  // State to track if users are being loaded
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+
+  // Fetch users on component mount
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoadingUsers(true)
+      setIsLoadingUsers(true);
       try {
-        const data = await userApi.getUsers()
-        setUsers(data)
+        const data = await userApi.getUsers();
+        setUsers(data);
       } catch (error) {
-        console.error("Error fetching users:", error)
-        toast.error("Failed to load users")
+        console.error("Error fetching users:", error);
+        toast.error("Failed to load users");
       } finally {
-        setIsLoadingUsers(false)
+        setIsLoadingUsers(false);
       }
-    }
+    };
 
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
+  // Initialize the form with react-hook-form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,7 +108,7 @@ export default function PostCreationForm({ onPostCreated, onPostUpdated, editing
       content: "",
       author_id: "",
     },
-  })
+  });
 
   // Update form values when editing post changes
   useEffect(() => {
@@ -83,91 +116,103 @@ export default function PostCreationForm({ onPostCreated, onPostUpdated, editing
       form.reset({
         title: editingPost.title,
         content: editingPost.content,
-        author_id: "", // Idealmente, você buscaria o autor do post aqui
-      })
+        author_id: "", // Ideally, fetch the post's author here
+      });
     } else {
       form.reset({
         title: "",
         content: "",
         author_id: "",
-      })
+      });
     }
-  }, [editingPost, form])
+  }, [editingPost, form]);
 
+  // Handle form submission
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true)
-    setFormStatus({ type: null, message: null })
+    setIsSubmitting(true);
+    setFormStatus({ type: null, message: null });
 
     try {
       if (editingPost) {
-        // Update existing post - não enviamos o author_id na atualização
-        const { author_id, ...updateData } = data
-        await postApi.updatePost(editingPost.id, updateData)
+        // Update existing post (author_id not sent during update)
+        const { author_id, ...updateData } = data;
+        await postApi.updatePost(editingPost.id, updateData);
 
         setFormStatus({
           type: "success",
           message: "Post updated successfully!",
-        })
+        });
 
-        onPostUpdated()
+        onPostUpdated();
 
-        toast.success("Post has been updated successfully")
+        toast.success("Post has been updated successfully");
       } else {
         // Create new post
         await postApi.createPost({
           title: data.title,
           content: data.content,
-          author_id: Number.parseInt(data.author_id), // Convertendo string para número
-        })
+          author_id: Number.parseInt(data.author_id), // Convert string to number
+        });
 
         setFormStatus({
           type: "success",
           message: "Post created successfully!",
-        })
+        });
 
-        form.reset()
-        onPostCreated()
+        form.reset();
+        onPostCreated();
 
-        toast.success("Post has been created successfully")
+        toast.success("Post has been created successfully");
       }
     } catch (error: any) {
-      console.error("Post submission error:", error)
+      console.error("Post submission error:", error);
 
-      let errorMessage = "An unexpected error occurred"
+      let errorMessage = "An unexpected error occurred";
 
       if (error.response) {
         if (error.response.status === 400) {
-          errorMessage = "Invalid data provided. Please check your inputs."
-          console.error("API Error Details:", error.response.data)
+          errorMessage = "Invalid data provided. Please check your inputs.";
+          console.error("API Error Details:", error.response.data);
         } else if (error.response.status === 500) {
-          errorMessage = "Server error. Please try again later."
+          errorMessage = "Server error. Please try again later.";
         }
       }
 
       setFormStatus({
         type: "error",
         message: errorMessage,
-      })
+      });
 
-      toast.error(errorMessage)
+      toast.error(errorMessage);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{editingPost ? "Edit Post" : "Create New Post"}</CardTitle>
         <CardDescription>
-          {editingPost ? "Update your existing post" : "Share your thoughts with the community"}
+          {editingPost
+            ? "Update your existing post"
+            : "Share your thoughts with the community"}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {formStatus.type && (
-          <Alert variant={formStatus.type === "error" ? "destructive" : "default"} className="mb-6">
-            {formStatus.type === "error" ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
-            <AlertTitle>{formStatus.type === "error" ? "Error" : "Success"}</AlertTitle>
+          <Alert
+            variant={formStatus.type === "error" ? "destructive" : "default"}
+            className="mb-6"
+          >
+            {formStatus.type === "error" ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <CheckCircle className="h-4 w-4" />
+            )}
+            <AlertTitle>
+              {formStatus.type === "error" ? "Error" : "Success"}
+            </AlertTitle>
             <AlertDescription>{formStatus.message}</AlertDescription>
           </Alert>
         )}
@@ -195,7 +240,11 @@ export default function PostCreationForm({ onPostCreated, onPostUpdated, editing
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Write your post content here..." className="min-h-[150px]" {...field} />
+                    <Textarea
+                      placeholder="Write your post content here..."
+                      className="min-h-[150px]"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -209,7 +258,11 @@ export default function PostCreationForm({ onPostCreated, onPostUpdated, editing
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Author</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingUsers}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoadingUsers}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select an author" />
@@ -226,27 +279,29 @@ export default function PostCreationForm({ onPostCreated, onPostUpdated, editing
                           </SelectItem>
                         ) : (
                           users.map((user) => (
-                            <SelectItem key={user.id} value={user.id.toString()}>
+                            <SelectItem
+                              key={user.id}
+                              value={user.id.toString()}
+                            >
                               {user.username}
                             </SelectItem>
                           ))
                         )}
                       </SelectContent>
+                      <FormMessage />
                     </Select>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
             )}
-
             <div className="flex gap-4 justify-end">
               {editingPost && (
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    form.reset()
-                    onPostUpdated() // This will also clear the editing state
+                    form.reset();
+                    onPostUpdated(); // This will also clear the editing state
                   }}
                 >
                   Cancel
@@ -259,14 +314,13 @@ export default function PostCreationForm({ onPostCreated, onPostUpdated, editing
                     ? "Updating..."
                     : "Creating..."
                   : editingPost
-                    ? "Update Post"
-                    : "Create Post"}
+                  ? "Update Post"
+                  : "Create Post"}
               </Button>
             </div>
           </form>
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }
-

@@ -1,33 +1,37 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+import * as React from "react";
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
+// AlertDialog component wrapping the Radix UI AlertDialog primitive
 function AlertDialog({
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
-  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
+  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
+// AlertDialogTrigger component wrapping the Radix UI AlertDialog trigger
 function AlertDialogTrigger({
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
   return (
     <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
-  )
+  );
 }
 
+// AlertDialogPortal component wrapping the Radix UI AlertDialog portal
 function AlertDialogPortal({
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
   return (
     <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
-  )
+  );
 }
 
+// AlertDialogOverlay component wrapping the Radix UI AlertDialog overlay
 function AlertDialogOverlay({
   className,
   ...props
@@ -41,9 +45,10 @@ function AlertDialogOverlay({
       )}
       {...props}
     />
-  )
+  );
 }
 
+// AlertDialogContent component wrapping the Radix UI AlertDialog content
 function AlertDialogContent({
   className,
   ...props
@@ -60,9 +65,10 @@ function AlertDialogContent({
         {...props}
       />
     </AlertDialogPortal>
-  )
+  );
 }
 
+// AlertDialogHeader component for the header section of the AlertDialog
 function AlertDialogHeader({
   className,
   ...props
@@ -73,9 +79,10 @@ function AlertDialogHeader({
       className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
       {...props}
     />
-  )
+  );
 }
 
+// AlertDialogFooter component for the footer section of the AlertDialog
 function AlertDialogFooter({
   className,
   ...props
@@ -89,9 +96,10 @@ function AlertDialogFooter({
       )}
       {...props}
     />
-  )
+  );
 }
 
+// AlertDialogTitle component wrapping the Radix UI AlertDialog title
 function AlertDialogTitle({
   className,
   ...props
@@ -102,9 +110,10 @@ function AlertDialogTitle({
       className={cn("text-lg font-semibold", className)}
       {...props}
     />
-  )
+  );
 }
 
+// AlertDialogDescription component wrapping the Radix UI AlertDialog description
 function AlertDialogDescription({
   className,
   ...props
@@ -115,9 +124,10 @@ function AlertDialogDescription({
       className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
-  )
+  );
 }
 
+// AlertDialogAction component wrapping the Radix UI AlertDialog action button
 function AlertDialogAction({
   className,
   ...props
@@ -127,9 +137,10 @@ function AlertDialogAction({
       className={cn(buttonVariants(), className)}
       {...props}
     />
-  )
+  );
 }
 
+// AlertDialogCancel component wrapping the Radix UI AlertDialog cancel button
 function AlertDialogCancel({
   className,
   ...props
@@ -139,7 +150,7 @@ function AlertDialogCancel({
       className={cn(buttonVariants({ variant: "outline" }), className)}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -154,4 +165,4 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
-}
+};

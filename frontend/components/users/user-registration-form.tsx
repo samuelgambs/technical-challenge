@@ -1,37 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { userApi } from "@/lib/api"
-import { toast } from "sonner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { AlertCircle, CheckCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { userApi } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+// Zod schema for form validation
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+// Type for form values inferred from the schema
+type FormValues = z.infer<typeof formSchema>;
 
+// Props interface for the UserRegistrationForm component
 interface UserRegistrationFormProps {
-  onUserCreated: () => void
+  onUserCreated: () => void;
 }
 
 export default function UserRegistrationForm({ onUserCreated }: UserRegistrationFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formStatus, setFormStatus] = useState<{
-    type: "success" | "error" | null
-    message: string | null
-  }>({ type: null, message: null })
+  // State to track if the form is submitting
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // State to manage form submission status (success or error)
+  const [formStatus, setFormStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string | null;
+  }>({ type: null, message: null });
+
+  // Initialize the form with react-hook-form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,48 +59,49 @@ export default function UserRegistrationForm({ onUserCreated }: UserRegistration
       email: "",
       password: "",
     },
-  })
+  });
 
+  // Handle form submission
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true)
-    setFormStatus({ type: null, message: null })
+    setIsSubmitting(true);
+    setFormStatus({ type: null, message: null });
 
     try {
-      await userApi.createUser(data)
+      await userApi.createUser(data);
 
       setFormStatus({
         type: "success",
         message: "User registered successfully!",
-      })
+      });
 
-      form.reset()
-      onUserCreated()
+      form.reset();
+      onUserCreated();
 
-      toast.success("User has been registered successfully")
+      toast.success("User has been registered successfully");
     } catch (error: any) {
-      console.error("Registration error:", error)
+      console.error("Registration error:", error);
 
-      let errorMessage = "An unexpected error occurred"
+      let errorMessage = "An unexpected error occurred";
 
       if (error.response) {
         // Handle different status codes
         if (error.response.status === 400) {
-          errorMessage = "Invalid data provided. Please check your inputs."
+          errorMessage = "Invalid data provided. Please check your inputs.";
         } else if (error.response.status === 500) {
-          errorMessage = "Server error. Please try again later."
+          errorMessage = "Server error. Please try again later.";
         }
       }
 
       setFormStatus({
         type: "error",
         message: errorMessage,
-      })
+      });
 
-      toast.error(errorMessage)
+      toast.error(errorMessage);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Card>
@@ -148,6 +169,5 @@ export default function UserRegistrationForm({ onUserCreated }: UserRegistration
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }
-
