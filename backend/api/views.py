@@ -13,17 +13,26 @@ logger = logging.getLogger(__name__)
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for handling User API operations.
-    Provides CRUD functionality for User model.
+    ViewSet for handling User API operations with SQLAlchemy.
     """
     serializer_class = UserSerializer
     user_dal = UserDAL()
 
     def get_queryset(self):
-        """Retrieve all users from the database."""
+        """Retrieve all users from the database using SQLAlchemy."""
         Session = sessionmaker(bind=engine)
         with Session() as db_session:
-            return db_session.query(User).all()
+            return db_session.query(User).all()  # ✅ Agora está correto para SQLAlchemy
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        """Retrieve a single user by ID."""
+        Session = sessionmaker(bind=engine)
+        with Session() as db_session:
+            user = db_session.query(User).filter(User.id == pk).first()
+            if not user:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         """Create a new user."""
@@ -33,11 +42,41 @@ class UserViewSet(viewsets.ModelViewSet):
         with Session() as db_session:
             try:
                 user = self.user_dal.create_user(serializer.validated_data, db_session)
+                db_session.commit()  # 🔥 Garante que a transação foi salva
                 return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
             except Exception as e:
                 logger.error(f"Error creating user: {e}")
+                db_session.rollback()  # Reverte qualquer erro
                 return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def update(self, request, pk=None, *args, **kwargs):
+        """Update an existing user."""
+        Session = sessionmaker(bind=engine)
+        with Session() as db_session:
+            user = db_session.query(User).filter(User.id == pk).first()
+            if not user:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            try:
+                updated_user = self.user_dal.update_user(user, serializer.validated_data, db_session)
+                db_session.commit()
+                return Response(UserSerializer(updated_user).data)
+            except Exception as e:
+                logger.error(f"Error updating user: {e}")
+                db_session.rollback()
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        """Delete a user."""
+        Session = sessionmaker(bind=engine)
+        with Session() as db_session:
+            user = db_session.query(User).filter(User.id == pk).first()
+            if not user:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            self.user_dal.delete_user(user, db_session)
+            db_session.commit()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 class PostViewSet(viewsets.ModelViewSet):
     """

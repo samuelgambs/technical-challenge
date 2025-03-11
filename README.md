@@ -135,6 +135,34 @@ project-root/
 
 ---
 
+## 🔥 API Endpoints (Backend)
+
+A full interactive API documentation is available at:
+🔗 Swagger UI http://localhost:8000/api/schema/swagger-ui/
+
+### 🔹 Authentication
+
+| Method | Endpoint               | Description       |
+| ------ | ---------------------- | ----------------- |
+| POST   | `/auth/token/`         | Get JWT Token     |
+| POST   | `/auth/token/refresh/` | Refresh JWT Token |
+
+### 🔹 Users
+
+| Method | Endpoint      | Description    |
+| ------ | ------------- | -------------- |
+| GET    | `/api/users/` | List all users |
+| POST   | `/api/users/` | Create a user  |
+
+### 🔹 Posts
+
+| Method | Endpoint      | Description    |
+| ------ | ------------- | -------------- |
+| GET    | `/api/posts/` | List all posts |
+| POST   | `/api/posts/` | Create a post  |
+
+---
+
 ## 📡 API Examples
 
 ### 🔹 Get JWT Token
@@ -165,6 +193,20 @@ curl -X DELETE http://127.0.0.1:8000/api/v1/posts/1/ \
 ```
 
 ---
+## 🧪 Running Tests
+
+To run the tests and check code coverage:
+```bash
+pytest --cov=api -v
+```
+
+For detailed coverage report:
+```bash
+pytest --cov=api --cov-report=html
+```
+This will generate an `htmlcov` folder with a full report.
+
+---
 
 ## ✅ Features
 
@@ -177,9 +219,8 @@ curl -X DELETE http://127.0.0.1:8000/api/v1/posts/1/ \
 
 ---
 
-## 📜 License
-
-This project is licensed under the **MIT License**.
+## 🔗 AWS System Design
+[AWS System Design Documentation](aws_system_design.md)
 
 ---
 
@@ -189,4 +230,3 @@ For any inquiries, feel free to reach out!
 
 🔗 **Email:** samuelcddo@gmail.com  
 🔗 **LinkedIn:** [https://www.linkedin.com/in/samuel-dias-de-oliveira](#)
-

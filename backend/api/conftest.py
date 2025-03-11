@@ -27,13 +27,11 @@ def db_session():
 
 @pytest.fixture
 def sample_user(db_session):
-    """
-    Creates and returns a sample user for testing.
-    """
     user = User(username="testuser", email="test@example.com", password="password")
     db_session.add(user)
     db_session.commit()
-    print(f"Sample user created: {user.username}")  # Debugging log
+    db_session.refresh(user)  # Ensures that the user has been saved in the database
+    print(f"Sample user created: {user.id} - {user.username}")  # Debugging
     return user
 
 @pytest.fixture
